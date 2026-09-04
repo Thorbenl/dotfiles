@@ -1,0 +1,296 @@
+developer_instructions = "You have oh-my-codex installed. AGENTS.md is the orchestration brain and main control surface. Follow AGENTS.md for skill/keyword routing, $name workflow invocation, and role-specialized subagents. Use outcome-first, concise progress updates: state the target result, constraints, validation evidence, and stop condition before adding process detail. Native subagents live in .codex/agents and may handle independent parallel subtasks within one Codex session or team pane. Skills load from .codex/skills, not native-agent TOMLs. Treat installed prompts as narrower execution surfaces under AGENTS.md authority."
+
+model_context_window = 1000000
+model_auto_compact_token_limit = 900000
+
+model = "gpt-5.6-sol"
+model_reasoning_effort = "high"
+[projects."/Users/dkThoLue"]
+trust_level = "untrusted"
+
+[projects."/Users/dkThoLue/personalProjects"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/KackyGG"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/work/07.03.03-repo"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/pepperhome"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/work"]
+trust_level = "untrusted"
+
+[projects."/Users/dkThoLue/personalProjects/kacky-infra-ansible"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/work/sapcourse"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/minicontrol/userdata/plugins/kacky"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/thelegogroup"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/Windrose-Save-Editor"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/070303_galaxy_qm_to_datalakes"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/kontrol"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/personalProjects/tm2020-mcp"]
+trust_level = "trusted"
+
+[projects."/Users/dkThoLue/Downloads/GUIDES-corpus"]
+trust_level = "trusted"
+
+[notice.model_migrations]
+"gpt-5.2-codex" = "gpt-5.3-codex"
+"gpt-5.3-codex" = "gpt-5.4"
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+startup_timeout_sec = 15.0
+
+[mcp_servers.discord-mcp]
+url = "http://localhost:8085/mcp"
+
+[mcp_servers.discord-mcp.tools.read_messages]
+approval_mode = "approve"
+
+[mcp_servers.discord-mcp.tools.list_channels]
+approval_mode = "approve"
+
+[tui]
+status_line = ["model-with-reasoning", "git-branch", "context-remaining", "total-input-tokens", "total-output-tokens", "five-hour-limit"]
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4
+"gpt-5.6-sol" = 4
+
+[hooks.state]
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:post_tool_use:1:0"]
+trusted_hash = "sha256:e9e8c867688fd1baa04c825ac6a19b62db50e92be75d11f3fba285df7d183909"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:session_start:1:0"]
+trusted_hash = "sha256:8565a8f58bebb5a3c1cad05c0c9a403b6d20589112f50df2f07e634c596d2d85"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:subagent_start:0:0"]
+trusted_hash = "sha256:efc295d8c296d6117967336d3a2b1f844c1376e6c3f369970060dffeaeb57da1"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:stop:1:0"]
+trusted_hash = "sha256:131f482aa8e654ed7c0ee0b076f99613c5409096ec029abd7bbe3c08a4061b64"
+
+# OMX-owned Codex hook trust state
+# Trusts only setup-managed native hook wrappers.
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:post_compact:0:0"]
+trusted_hash = "sha256:042b6b17cdbcd70af57db0f8410a01455a7095b3c2a092b63d8c52dfc31ce275"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:ff0a6191a4af09c671927b4939dab266dcb32b497ed86cc0f0dd7f5f764e3e3f"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:f3475da37ba70a160bff013d05a94fbe6df4cfe58856ca052f983480a5477b7a"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:de7a6eaafe19d7a6d097546bf61e13163802e9c496280b36b70913e30bce16ef"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:53310ddea6d7aceadf80f3c7d8af1922099aeeddf5c6e4d48b790c38e61dc413"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:stop:0:0"]
+trusted_hash = "sha256:67e6a0fa234eb93dc564c006a3616f440ba28b4d18a4fc77300d7a2fbd726f3f"
+
+[hooks.state."/Users/dkThoLue/.codex/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:6f267d17187cbb45d2739b1d47f5ad8bc4d44cd4594ab069b590fb53f07c6f92"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:pre_tool_use:0:0"]
+trusted_hash = "sha256:0beadaffc3fbe7daf525b5f470271fd9652bbb6a681827f62ae519aa585114fa"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:post_tool_use:0:0"]
+trusted_hash = "sha256:8ec4518162bac57963c9c3f8d3b6f65537a132387cafbbad1bf4c8fc3591209b"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:pre_compact:0:0"]
+trusted_hash = "sha256:0e2a59e8120f92417338b44563e5eded7dd0f7b4343c5cb5b93f730fae42e7be"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:post_compact:0:0"]
+trusted_hash = "sha256:3af8aa800d97defd1fcadbd4fca784153ebbe2471f37dbaa76f8a66ab565204b"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:c70df1f988a6965eb9d0fbdbfeaf84a609c98a9e24567dd1eb140cd6bf8e49f9"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:user_prompt_submit:0:0"]
+trusted_hash = "sha256:dbfc3e0626a9cf6bbe579a69e22409384ed0598fba08df794b355e1e7ced9e53"
+
+[hooks.state."oh-my-codex@oh-my-codex-local:hooks/hooks.json:stop:0:0"]
+trusted_hash = "sha256:216a53a71d5c9819f0fdbbbbf869c4f8d9455e742dad9e0f1d91f3d67dbba2ff"
+# End OMX-owned Codex hook trust state
+
+# ============================================================
+# End oh-my-codex
+
+# GSD Agent Configuration — managed by gsd-core installer
+
+[agents.gsd-advisor-researcher]
+description = "Researches a single gray area decision and returns a structured comparison table with rationale. Spawned by discuss-phase advisor mode."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-advisor-researcher.toml"
+
+[agents.gsd-ai-researcher]
+description = "Researches a chosen AI framework's official docs to produce implementation-ready guidance — best practices, syntax, core patterns, and pitfalls distilled for the specific use case. Writes the Framework Quick Reference and Implementation Guidance sections of AI-SPEC.md. Spawned by $gsd-ai-integration-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-ai-researcher.toml"
+
+[agents.gsd-assumptions-analyzer]
+description = "Deeply analyzes codebase for a phase and returns structured assumptions with evidence. Spawned by discuss-phase assumptions mode."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-assumptions-analyzer.toml"
+
+[agents.gsd-code-fixer]
+description = "Applies fixes to code review findings from REVIEW.md. Reads source files, applies intelligent fixes, and commits each fix atomically. Spawned by $gsd-code-review --fix."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-code-fixer.toml"
+
+[agents.gsd-code-reviewer]
+description = "Reviews source files for bugs, security issues, and code quality problems. Produces structured REVIEW.md with severity-classified findings. Spawned by $gsd-code-review."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-code-reviewer.toml"
+
+[agents.gsd-codebase-mapper]
+description = "Explores codebase and writes structured analysis documents. Spawned by map-codebase with a focus area (tech, arch, quality, concerns). Writes documents directly to reduce orchestrator context load."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-codebase-mapper.toml"
+
+[agents.gsd-debug-session-manager]
+description = "Manages multi-cycle $gsd-debug checkpoint and continuation loop in isolated context. Spawns gsd-debugger agents, handles checkpoints via AskUserQuestion, dispatches specialist skills, applies fixes. Returns compact summary to main context. Spawned by $gsd-debug command."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-debug-session-manager.toml"
+
+[agents.gsd-debugger]
+description = "Investigates bugs using scientific method, manages debug sessions, handles checkpoints. Spawned by $gsd-debug orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-debugger.toml"
+
+[agents.gsd-doc-classifier]
+description = "Classifies a single planning document as ADR, PRD, SPEC, DOC, or UNKNOWN. Extracts title, scope summary, and cross-references. Spawned in parallel by $gsd-ingest-docs. Writes a JSON classification file and returns a one-line confirmation."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-doc-classifier.toml"
+
+[agents.gsd-doc-synthesizer]
+description = "Synthesizes classified planning docs into a single consolidated context. Applies precedence rules, detects cross-ref cycles, enforces LOCKED-vs-LOCKED hard-blocks, and writes INGEST-CONFLICTS.md with three buckets (auto-resolved, competing-variants, unresolved-blockers). Spawned by $gsd-ingest-docs."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-doc-synthesizer.toml"
+
+[agents.gsd-doc-verifier]
+description = "Verifies factual claims in generated docs against the live codebase. Returns structured JSON per doc."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-doc-verifier.toml"
+
+[agents.gsd-doc-writer]
+description = "Writes and updates project documentation. Spawned with a doc_assignment block specifying doc type, mode (create/update/supplement), and project context."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-doc-writer.toml"
+
+[agents.gsd-domain-researcher]
+description = "Researches the business domain and real-world application context of the AI system being built. Surfaces domain expert evaluation criteria, industry-specific failure modes, regulatory context, and what \"good\" looks like for practitioners in this field — before the eval-planner turns it into measurable rubrics. Spawned by $gsd-ai-integration-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-domain-researcher.toml"
+
+[agents.gsd-eval-auditor]
+description = "Retroactive audit of an implemented AI phase's evaluation coverage. Checks implementation against the AI-SPEC.md evaluation plan. Scores each eval dimension as COVERED/PARTIAL/MISSING. Produces a scored EVAL-REVIEW.md with findings, gaps, and remediation guidance. Spawned by $gsd-eval-review orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-eval-auditor.toml"
+
+[agents.gsd-eval-planner]
+description = "Designs a structured evaluation strategy for an AI phase. Identifies critical failure modes, selects eval dimensions with rubrics, recommends tooling, and specifies the reference dataset. Writes the Evaluation Strategy, Guardrails, and Production Monitoring sections of AI-SPEC.md. Spawned by $gsd-ai-integration-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-eval-planner.toml"
+
+[agents.gsd-executor]
+description = "Executes GSD plans with atomic commits, deviation handling, checkpoint protocols, and state management. Spawned by execute-phase orchestrator or execute-plan command."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-executor.toml"
+
+[agents.gsd-framework-selector]
+description = "Presents an interactive decision matrix to surface the right AI/LLM framework for the user's specific use case. Produces a scored recommendation with rationale. Spawned by $gsd-ai-integration-phase and $gsd-select-framework orchestrators."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-framework-selector.toml"
+
+[agents.gsd-integration-checker]
+description = "Verifies cross-phase integration and E2E flows. Checks that phases connect properly and user workflows complete end-to-end."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-integration-checker.toml"
+
+[agents.gsd-intel-updater]
+description = "Analyzes codebase and writes structured intel files to .planning/intel/."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-intel-updater.toml"
+
+[agents.gsd-nyquist-auditor]
+description = "Fills Nyquist validation gaps by generating tests and verifying coverage for phase requirements"
+config_file = "/Users/dkThoLue/.codex/agents/gsd-nyquist-auditor.toml"
+
+[agents.gsd-pattern-mapper]
+description = "Analyzes codebase for existing patterns and produces PATTERNS.md mapping new files to closest analogs. Read-only codebase analysis spawned by $gsd-plan-phase orchestrator before planning."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-pattern-mapper.toml"
+
+[agents.gsd-phase-researcher]
+description = "Researches how to implement a phase before planning. Produces RESEARCH.md consumed by gsd-planner. Spawned by $gsd-plan-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-phase-researcher.toml"
+
+[agents.gsd-plan-checker]
+description = "Verifies plans will achieve phase goal before execution. Goal-backward analysis of plan quality. Spawned by $gsd-plan-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-plan-checker.toml"
+
+[agents.gsd-planner]
+description = "Creates executable phase plans with task breakdown, dependency analysis, and goal-backward verification. Spawned by $gsd-plan-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-planner.toml"
+
+[agents.gsd-project-researcher]
+description = "Researches domain ecosystem before roadmap creation. Produces files in .planning/research/ consumed during roadmap creation. Spawned by $gsd-new-project or $gsd-new-milestone orchestrators."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-project-researcher.toml"
+
+[agents.gsd-research-synthesizer]
+description = "Synthesizes research outputs from parallel researcher agents into SUMMARY.md. Spawned by $gsd-new-project after 4 researcher agents complete."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-research-synthesizer.toml"
+
+[agents.gsd-roadmapper]
+description = "Creates project roadmaps with phase breakdown, requirement mapping, success criteria derivation, and coverage validation. Spawned by $gsd-new-project orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-roadmapper.toml"
+
+[agents.gsd-security-auditor]
+description = "Verifies threat mitigations from PLAN.md threat model exist in implemented code. Produces SECURITY.md. Spawned by $gsd-secure-phase."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-security-auditor.toml"
+
+[agents.gsd-ui-auditor]
+description = "Retroactive 6-pillar visual audit of implemented frontend code. Produces scored UI-REVIEW.md. Spawned by $gsd-ui-review orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-ui-auditor.toml"
+
+[agents.gsd-ui-checker]
+description = "Validates UI-SPEC.md design contracts against 6 quality dimensions. Produces BLOCK/FLAG/PASS verdicts. Spawned by $gsd-ui-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-ui-checker.toml"
+
+[agents.gsd-ui-researcher]
+description = "Produces UI-SPEC.md design contract for frontend phases. Reads upstream artifacts, detects design system state, asks only unanswered questions. Spawned by $gsd-ui-phase orchestrator."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-ui-researcher.toml"
+
+[agents.gsd-user-profiler]
+description = "Analyzes extracted session messages across 8 behavioral dimensions to produce a scored developer profile with confidence levels and evidence. Spawned by profile orchestration workflows."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-user-profiler.toml"
+
+[agents.gsd-verifier]
+description = "Verifies phase goal achievement through goal-backward analysis. Checks codebase delivers what phase promised, not just that tasks completed. Creates VERIFICATION.md report."
+config_file = "/Users/dkThoLue/.codex/agents/gsd-verifier.toml"
+
+[apps.connector_76869538009648d5b282a4bb21c3d157.tools.github_create_pull_request]
+approval_mode = "approve"
+[features]
+hooks = true
+goals = true
+# End OMX-owned Codex hook trust state
+
+[plugins."oh-my-codex@oh-my-codex-local"]
+enabled = true
+
+[plugins."projectatlas@projectatlas"]
+enabled = true
+
+[marketplaces.oh-my-codex-local]
+source_type = "local"
+source = "/Users/dkThoLue/.local/share/mise/installs/node/24.12.0/lib/node_modules/oh-my-codex"
+
+[marketplaces.projectatlas]
+last_updated = "2026-08-19T19:23:00Z"
+last_revision = "087cdd523825fa353a19efcf6d82eed680e65396"
+source_type = "git"
+source = "https://github.com/styler-ai/ProjectAtlas.git"
+ref = "v0.4.4"

@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+#
+# Update everything this machine installs, in one command.
+#
+#   update-all           update all sources
+#   update-all --dry     show what would be updated
+#   update-all brew mise only update named sources
+#
+# Sources: brew, mise, rust, cargo, dotnet, uv, twg, npm, dotfiles
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+DRY=false
+[ "${1:-}" = "--dry" ] && {
+	DRY=true
+	shift
+}
+WANT="${*:-brew mise rust cargo dotnet uv twg dotfiles}"
+
+info() { printf '\n\033[34m==>\033[0m \033[1m%s\033[0m\n' "$1"; }
+skip() { printf '\033[33m    skipped: %s\033[0m\n' "$1"; }
+run() {
+	if $DRY; then
+		printf '    would run: %s\n' "$*"
+	else
+		"$@" || printf '\033[31m    failed: %s\033[0m\n' "$*"
+	fi
+}
+wants() { [[ " $WANT " == *" $1 "* ]]; }
+
+if wants brew; then
+	info "Homebrew"
+	if command -v brew >/dev/null 2>&1; then
+		run brew update
+		run brew upgrade
+		# Reconcile against the Brewfile so drift shows up.
+		if [ -f "$HOME/dotfiles/Brewfile" ]; then
+			run brew bundle --file="$HOME/dotfiles/Brewfile"
+			$DRY || brew bundle cleanup --file="$HOME/dotfiles/Brewfile" ||
+				printf '    (cleanup lists what is installed but not in the Brewfile)\n'
+		fi
+		run brew autoremove
+		run brew cleanup --prune=7
+	else
+		skip "brew not installed"
+	fi
+fi
+
+if wants mise; then
+	info "mise: runtimes and npm-backed tools"
+	if command -v mise >/dev/null 2>&1; then
+		run mise self-update --yes
+		run mise upgrade
+		run mise prune --yes
+	else
+		skip "mise not installed"
+	fi
+fi
+
+if wants rust; then
+	info "Rust"
+	if command -v rustup >/dev/null 2>&1; then run rustup update; else skip "rustup not installed"; fi
+fi
+
+if wants cargo; then
+	info "cargo tools"
+	if command -v cargo >/dev/null 2>&1; then
+		# ProjectAtlas is pinned to a tag in setup-new-mac.sh. Bump the tag
+		# there rather than chasing the default branch from here.
+		run cargo install --git https://github.com/styler-ai/ProjectAtlas --tag v0.4.4
+	else
+		skip "cargo not installed"
+	fi
+fi
+
+if wants dotnet; then
+	info "dotnet global tools"
+	if command -v dotnet >/dev/null 2>&1; then
+		for pkg in dotnet-ef csharp-ls roslyn-language-server microsoft.sqlpackage; do
+			run dotnet tool update --global "$pkg"
+		done
+	else
+		skip "dotnet not installed"
+	fi
+fi
+
+if wants uv; then
+	info "uv tools"
+	if command -v uv >/dev/null 2>&1; then run uv tool upgrade --all; else skip "uv not installed"; fi
+fi
+
+if wants twg; then
+	info "twg"
+	if command -v twg >/dev/null 2>&1; then
+		run curl -fsSL --retry 2 https://teamwork-graph.atlassian.com/cli/install -o /tmp/twg-install
+		$DRY || bash /tmp/twg-install
+	else
+		skip "twg not installed"
+	fi
+fi
+
+if wants dotfiles; then
+	info "dotfiles"
+	if [ -d "$HOME/dotfiles/.git" ]; then
+		run git -C "$HOME/dotfiles" pull --ff-only
+		run stow --dir="$HOME/dotfiles" --target="$HOME" --restow home
+	else
+		skip "no ~/dotfiles checkout"
+	fi
+fi
+
+printf '\n\033[32m==>\033[0m Done. Open a new shell if runtimes changed.\n'

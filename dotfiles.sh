@@ -1,63 +1,33 @@
 #!/usr/bin/env bash
+#
+# One-command bootstrap for a new Mac.
+#
+#   curl -fsSL https://raw.githubusercontent.com/Thorbenl/dotfiles/main/dotfiles.sh | bash
+#
+# Clones this repo, then hands over to setup-new-mac.sh, which is resumable.
 
 set -o errexit
+set -o nounset
+set -o pipefail
 
-REPO_URL=https://github.com/Thorbenl/.dotfiles.git
-REPO_PATH="$HOME/.dotfiles"
+REPO_URL="https://github.com/Thorbenl/dotfiles.git"
+REPO_PATH="$HOME/dotfiles"
 
-reset_color=$(tput sgr 0)
+info() { printf '\033[34m[*]\033[0m %s\n' "$1"; }
 
-info() {
-	printf "%s[*] %s%s\n" "$(tput setaf 4)" "$1" "$reset_color"
-}
+if ! xcode-select -p >/dev/null 2>&1; then
+	info "Installing Xcode Command Line Tools first, git needs them"
+	xcode-select --install || true
+	until xcode-select -p >/dev/null 2>&1; do sleep 10; done
+fi
 
-success() {
-	printf "%s[*] %s%s\n" "$(tput setaf 2)" "$1" "$reset_color"
-}
+if [ -d "$REPO_PATH/.git" ]; then
+	info "$REPO_PATH already exists, pulling"
+	git -C "$REPO_PATH" pull --ff-only || true
+else
+	info "Cloning $REPO_URL into $REPO_PATH"
+	git clone "$REPO_URL" "$REPO_PATH"
+fi
 
-err() {
-	printf "%s[*] %s%s\n" "$(tput setaf 1)" "$1" "$reset_color"
-}
-
-warn() {
-	printf "%s[*] %s%s\n" "$(tput setaf 3)" "$1" "$reset_color"
-}
-
-install_xcode_tools() {
-	if xcode-select -p >/dev/null; then
-		warn "xCode Command Line Tools already installed"
-	else
-		info "Installing xCode Command Line Tools..."
-		xcode-select --install
-		sudo xcodebuild -license accept
-	fi
-}
-
-install_homebrew() {
-	export HOMEBREW_CASK_OPTS="--appdir=/Applications"
-	if hash brew &>/dev/null; then
-		warn "Homebrew already installed"
-	else
-		info "Installing homebrew..."
-		sudo --validate # reset `sudo` timeout to use Homebrew install in noninteractive mode
-		NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
-	fi
-}
-
-info "####### dotfiles #######"
-read -p "Press enter to start:"
-info "Lets gooo..."
-
-install_xcode_tools
-install_homebrew
-
-info "Installing Git"
-brew install git
-
-info "Cloning .dotfiles repo from $REPO_URL into $REPO_PATH"
-git clone "$REPO_URL" "$REPO_PATH"
-
-info "Change path to $REPO_PATH"
-cd "$REPO_PATH" >/dev/null
-
-./installmac.sh
+info "Handing over to setup-new-mac.sh"
+exec "$REPO_PATH/setup-new-mac.sh" "$@"

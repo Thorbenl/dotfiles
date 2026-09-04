@@ -1,0 +1,388 @@
+#!/usr/bin/env bash
+# legospec - mirror and search LEGO AMMA API specs via the `lego` CLI.
+#
+# Everything is configurable by env var so this works on any machine:
+#   LEGO_BIN         path to the `lego` binary      (default: PATH, then ~/work/cli/lego)
+#   LEGO_SPECS_DIR   where specs are mirrored       (default: ~/work/api-specs)
+#   LEGO_INDEX_SERVER  AMMA API index server URL
+#   LEGO_SYNC_JOBS   parallel downloads             (default: 4 - AMMA 429s above ~8)
+#   LEGO_INDEX_SCOPE Azure resource for the index server token
+set -uo pipefail
+
+SPECS_DIR="${LEGO_SPECS_DIR:-$HOME/work/api-specs}"
+INDEX_SERVER="${LEGO_INDEX_SERVER:-https://amma-api-index.novus-cloud-tools.prod.novus.legogroup.io}"
+INDEX_SCOPE="${LEGO_INDEX_SCOPE:-api://b677183d-6803-4260-98e0-d97c5af912f3}"
+JOBS="${LEGO_SYNC_JOBS:-4}"
+STATE="$SPECS_DIR/.state"
+# resolve through symlinks, so a `legospec` symlink on PATH still finds specstore.py
+__src="${BASH_SOURCE[0]}"
+while [[ -h "$__src" ]]; do
+  __dir="$(cd -P "$(dirname "$__src")" && pwd)"
+  __src="$(readlink "$__src")"
+  [[ "$__src" != /* ]] && __src="$__dir/$__src"
+done
+HERE="$(cd -P "$(dirname "$__src")" && pwd)"
+PYSTORE="$HERE/specstore.py"
+NAMES_TTL_SECONDS=${LEGO_NAMES_TTL:-86400}
+
+die() { printf 'legospec: %s\n' "$*" >&2; exit 1; }
+info() { printf '%s\n' "$*" >&2; }
+
+# --- dependency resolution -------------------------------------------------
+
+resolve_lego() {
+  if [[ -n "${LEGO_BIN:-}" ]]; then
+    [[ -x "$LEGO_BIN" ]] || die "LEGO_BIN is set but not executable: $LEGO_BIN"
+    printf '%s' "$LEGO_BIN"; return 0
+  fi
+  local found
+  if found="$(command -v lego 2>/dev/null)"; then printf '%s' "$found"; return 0; fi
+  local candidate
+  for candidate in "$HOME/work/cli/lego" "$HOME/cli/lego" "./lego"; do
+    [[ -x "$candidate" ]] && { printf '%s' "$candidate"; return 0; }
+  done
+  die "cannot find the 'lego' CLI. Install it (brew install LEGO/tap/lego-cli) or set LEGO_BIN=/path/to/lego"
+}
+
+resolve_python() {
+  local candidate
+  for candidate in "${LEGO_PYTHON:-}" python3 /usr/bin/python3; do
+    [[ -n "$candidate" ]] && command -v "$candidate" >/dev/null 2>&1 && { printf '%s' "$candidate"; return 0; }
+  done
+  die "python3 not found (needed for search); set LEGO_PYTHON=/path/to/python3"
+}
+
+need() { command -v "$1" >/dev/null 2>&1 || die "missing required tool: $1"; }
+
+# --- environment switch ----------------------------------------------------
+
+current_env() {
+  if [[ -n "${ENV_OVERRIDE:-}" ]]; then printf '%s' "$ENV_OVERRIDE"; return; fi
+  if [[ -r "$STATE/env" ]]; then tr -d '[:space:]' < "$STATE/env"; return; fi
+  printf 'production'
+}
+
+validate_env() {
+  case "$1" in
+    production|integration) ;;
+    *) die "unknown environment '$1' (expected: production | integration)" ;;
+  esac
+}
+
+# integration is `--dev` in the lego CLI
+lego_env_flag() { [[ "$1" == "integration" ]] && printf '%s' '--dev' || printf '%s' ''; }
+
+# --- name list -------------------------------------------------------------
+
+index_token() {
+  need az
+  az account get-access-token --resource "$INDEX_SCOPE" --query accessToken -o tsv 2>/dev/null
+}
+
+# The index server exposes both environments uniformly; the `lego apis list-apis`
+# subcommand is hardcoded to production, so we call the server directly and only
+# fall back to the CLI (incl. its completion hack for integration) if that fails.
+fetch_names() {
+  local env="$1" tok
+  tok="$(index_token)"
+  if [[ -n "$tok" ]] && command -v jq >/dev/null 2>&1; then
+    if curl -fsS -H "Authorization: Bearer $tok" -H 'Accept: application/json' \
+         "$INDEX_SERVER/api?environment=$env" 2>/dev/null | jq -r '.items[].name' | sort; then
+      return 0
+    fi
+  fi
+  info "index server call failed, falling back to the lego CLI"
+  local lego; lego="$(resolve_lego)"
+  if [[ "$env" == "production" ]]; then
+    "$lego" apis list-apis 2>/dev/null | sort
+  else
+    "$lego" __complete apis spec --dev "" 2>/dev/null | grep -v '^:' | sort
+  fi
+}
+
+names_file() { printf '%s/%s.names' "$STATE" "$1"; }
+index_file() { printf '%s/%s.index.tsv' "$STATE" "$1"; }
+
+refresh_names() {
+  local env="$1" force="${2:-0}" nf if_ age now
+  nf="$(names_file "$env")"; if_="$(index_file "$env")"
+  if [[ "$force" != "1" && -s "$nf" && -s "$if_" ]]; then
+    now=$(date +%s)
+    age=$(( now - $(stat -f %m "$nf" 2>/dev/null || stat -c %Y "$nf") ))
+    [[ $age -lt $NAMES_TTL_SECONDS ]] && return 0
+  fi
+  mkdir -p "$STATE"
+  local tmp; tmp="$(mktemp)"
+  fetch_names "$env" > "$tmp" || die "failed to list APIs for $env"
+  [[ -s "$tmp" ]] || die "got an empty API list for $env (are you logged in? try: az login)"
+  mv "$tmp" "$nf"
+  "$(resolve_python)" "$PYSTORE" map-names < "$nf" > "$if_"
+  info "refreshed $env API list: $(wc -l < "$nf" | tr -d ' ') APIs"
+}
+
+filename_for() {
+  local env="$1" api="$2" line
+  line="$(awk -F'\t' -v n="$api" '$1==n{print $2; exit}' "$(index_file "$env")" 2>/dev/null)"
+  [[ -n "$line" ]] && printf '%s' "$line" || printf '%s.json' "$api"
+}
+
+resolve_api_name() {
+  # exact match wins; otherwise unique case-insensitive match
+  local env="$1" api="$2" nf matches
+  nf="$(names_file "$env")"
+  grep -Fxq "$api" "$nf" 2>/dev/null && { printf '%s' "$api"; return 0; }
+  matches="$(grep -Fix -- "$api" "$nf" 2>/dev/null)"
+  if [[ "$(printf '%s' "$matches" | grep -c . )" == "1" ]]; then
+    printf '%s' "$matches"; return 0
+  fi
+  printf '%s' "$api"
+}
+
+# resolve a name or fail with suggestions - much friendlier than letting the
+# download fail, and it catches the common "wrong environment" mistake
+require_api() {
+  local env="$1" api="$2" resolved nf other sug
+  nf="$(names_file "$env")"
+  resolved="$(resolve_api_name "$env" "$api")"
+  if grep -Fxq "$resolved" "$nf" 2>/dev/null; then printf '%s' "$resolved"; return 0; fi
+
+  info "no API named '$api' in $env"
+  other=production; [[ "$env" == "production" ]] && other=integration
+  if [[ -s "$(names_file "$other")" ]] && grep -Fixq "$api" "$(names_file "$other")" 2>/dev/null; then
+    info "  but it does exist in $other  ->  legospec -e $other ${FUNCNAME[1]#cmd_} $api"
+  fi
+  sug="$(grep -i -- "$(printf '%s' "$api" | sed 's/[^A-Za-z0-9]/./g')" "$nf" 2>/dev/null | head -8)"
+  if [[ -z "$sug" ]]; then
+    # typo tolerance on the cheap: match on a leading fragment of the name
+    local frag; frag="$(printf '%s' "$api" | cut -c1-$(( ${#api} * 2 / 3 )) )"
+    [[ ${#frag} -ge 3 ]] && sug="$(grep -i -- "$frag" "$nf" 2>/dev/null | head -8)"
+  fi
+  [[ -n "$sug" ]] && { info "  close matches in $env:"; printf '    %s\n' $sug >&2; }
+  exit 1
+}
+
+# --- fetching --------------------------------------------------------------
+
+# internal: fetch one spec with retry/backoff (AMMA 429s on bursts).
+# api and file are passed as separate args on purpose: BSD xargs -I{} rewrites
+# embedded tabs to spaces, so a single tab-joined argument does not survive.
+__fetch1() {
+  local env="$1" api="$2" file="$3"
+  local lego; lego="$(resolve_lego)"
+  local flag; flag="$(lego_env_flag "$env")"
+  local dest="$SPECS_DIR/$env/$file"
+  local tmp="$dest.part.$$"
+  local attempt err reason status
+  for attempt in 1 2 3 4; do
+    if err="$("$lego" apis spec "$api" ${flag:+$flag} -o "$tmp" 2>&1)"; then
+      if [[ -s "$tmp" ]]; then
+        mv -f "$tmp" "$dest"; printf '%s\n' "$api"; return 0
+      fi
+    fi
+    rm -f "$tmp"
+    # not an HTTP problem and never will be - do not burn retries on it
+    if printf '%s' "$err" | grep -q 'API not found'; then
+      reason="not present in the $env index"; break
+    fi
+    reason="$(printf '%s' "$err" | grep -oE 'unexpected status code[^"]*' | head -1)"
+    [[ -n "$reason" ]] || reason="$(printf '%s' "$err" | tr '\n' ' ' | tail -c 120)"
+    status="$(printf '%s' "$reason" | grep -oE '[0-9]{3}$' | head -1)"
+    # 429 (throttled) and 5xx are worth retrying; other 4xx will never succeed
+    if [[ -n "$status" && "$status" != "429" && "$status" -ge 400 && "$status" -lt 500 ]]; then
+      break
+    fi
+    [[ $attempt -lt 4 ]] && sleep $(( attempt * 3 ))
+  done
+  printf '%s\t%s\n' "$api" "${reason:-unknown}" >> "$STATE/$env.failures.tsv"
+  info "  FAIL $api  ${reason:-unknown}"
+  return 1
+}
+
+cmd_sync() {
+  local force=0 all=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --force) force=1 ;;
+      --all) all=1 ;;
+      *) die "sync: unexpected argument '$1'" ;;
+    esac; shift
+  done
+
+  local envs; envs=("$(current_env)")
+  [[ $all == 1 ]] && envs=(production integration)
+
+  local env
+  for env in "${envs[@]}"; do
+    validate_env "$env"
+    mkdir -p "$SPECS_DIR/$env" "$STATE"
+    refresh_names "$env" "$force"
+    : > "$STATE/$env.failures.tsv"
+
+    local worklist total
+    worklist="$(mktemp)"
+    while IFS=$'\t' read -r api file; do
+      [[ -n "$api" ]] || continue
+      if [[ $force == 1 || ! -s "$SPECS_DIR/$env/$file" ]]; then
+        # space-separated: AMMA names are always [A-Za-z0-9._-], never whitespace
+        printf '%s %s\n' "$api" "$file" >> "$worklist"
+      fi
+    done < "$(index_file "$env")"
+    total=$(wc -l < "$worklist" | tr -d ' ')
+
+    if [[ "$total" == "0" ]]; then
+      info "$env: already complete ($(ls -1 "$SPECS_DIR/$env" | wc -l | tr -d ' ') specs on disk)"
+      rm -f "$worklist"; continue
+    fi
+
+    info "$env: downloading $total spec(s) with $JOBS parallel jobs (AMMA rate-limits above ~8)..."
+    xargs -P "$JOBS" -n 2 "$0" __fetch1 "$env" < "$worklist" \
+      | awk -v t="$total" '{n++; if (n % 25 == 0) printf "  %d/%d\n", n, t > "/dev/stderr"} END {printf "  %d/%d done\n", n, t > "/dev/stderr"}'
+
+    local failed; failed=$(grep -c . "$STATE/$env.failures.tsv" 2>/dev/null || true)
+    info "$env: $(ls -1 "$SPECS_DIR/$env" | wc -l | tr -d ' ') specs on disk, ${failed:-0} permanently failing (see $STATE/$env.failures.tsv)"
+    rm -f "$worklist"
+  done
+}
+
+cmd_get() {
+  [[ $# -ge 1 ]] || die "usage: legospec get <api>"
+  local env; env="$(current_env)"; validate_env "$env"
+  mkdir -p "$SPECS_DIR/$env" "$STATE"
+  refresh_names "$env" 0
+  local api; api="$(require_api "$env" "$1")" || exit 1
+  local file; file="$(filename_for "$env" "$api")"
+  if __fetch1 "$env" "$api" "$file" >/dev/null; then
+    printf '%s\n' "$SPECS_DIR/$env/$file"
+  else
+    die "could not download spec for '$api' in $env"
+  fi
+}
+
+# --- read commands ---------------------------------------------------------
+
+cmd_list() {
+  local env; env="$(current_env)"; validate_env "$env"
+  refresh_names "$env" 0
+  if [[ $# -ge 1 ]]; then
+    grep -i -- "$1" "$(names_file "$env")" || { info "no API name matches '$1' in $env"; return 1; }
+  else
+    cat "$(names_file "$env")"
+  fi
+}
+
+cmd_search() {
+  [[ $# -ge 1 ]] || die "usage: legospec search <term> [--all] [--limit N] [--regex] [--json]"
+  local query="" all=0 passthru=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --all) all=1 ;;
+      --limit|--hits) passthru+=("$1" "$2"); shift ;;
+      --regex|--json) passthru+=("$1") ;;
+      *) [[ -z "$query" ]] && query="$1" || query="$query $1" ;;
+    esac; shift
+  done
+  local envs; envs=("$(current_env)")
+  [[ $all == 1 ]] && envs=(production integration)
+  "$(resolve_python)" "$PYSTORE" search "$query" \
+    --specs-dir "$SPECS_DIR" --envs "${envs[@]}" "${passthru[@]+"${passthru[@]}"}"
+}
+
+cmd_show() {
+  [[ $# -ge 1 ]] || die "usage: legospec show <api>"
+  local env; env="$(current_env)"; validate_env "$env"
+  refresh_names "$env" 0
+  local api; api="$(require_api "$env" "$1")" || exit 1
+  local file; file="$(filename_for "$env" "$api")"
+  local path="$SPECS_DIR/$env/$file"
+  [[ -s "$path" ]] || path="$(cmd_get "$api")"
+  "$(resolve_python)" "$PYSTORE" show --file "$path" --api "$api" --env "$env"
+}
+
+cmd_path() {
+  [[ $# -ge 1 ]] || die "usage: legospec path <api>"
+  local env; env="$(current_env)"; validate_env "$env"
+  refresh_names "$env" 0
+  local api; api="$(require_api "$env" "$1")" || exit 1
+  printf '%s/%s/%s\n' "$SPECS_DIR" "$env" "$(filename_for "$env" "$api")"
+}
+
+cmd_env() {
+  mkdir -p "$STATE"
+  if [[ $# -eq 0 ]]; then printf '%s\n' "$(current_env)"; return 0; fi
+  validate_env "$1"
+  printf '%s\n' "$1" > "$STATE/env"
+  info "default environment is now: $1"
+}
+
+cmd_doctor() {
+  printf 'specs dir      %s\n' "$SPECS_DIR"
+  printf 'index server   %s\n' "$INDEX_SERVER"
+  printf 'environment    %s\n' "$(current_env)"
+  printf 'parallel jobs  %s\n' "$JOBS"
+  local lego; lego="$(resolve_lego 2>/dev/null || echo MISSING)"
+  printf 'lego binary    %s\n' "$lego"
+  local t
+  for t in az jq rg curl python3; do
+    printf '%-14s %s\n' "$t" "$(command -v "$t" 2>/dev/null || echo 'MISSING')"
+  done
+  local env
+  for env in production integration; do
+    local n=0 f=0
+    [[ -d "$SPECS_DIR/$env" ]] && n=$(ls -1 "$SPECS_DIR/$env" 2>/dev/null | wc -l | tr -d ' ')
+    [[ -s "$STATE/$env.failures.tsv" ]] && f=$(grep -c . "$STATE/$env.failures.tsv")
+    printf 'mirror %-11s %s specs, %s failing\n' "$env" "$n" "$f"
+  done
+  if [[ -n "$(index_token)" ]]; then
+    printf 'azure auth     OK\n'
+  else
+    printf 'azure auth     FAILED - run: az login\n'
+  fi
+}
+
+usage() {
+  cat <<'EOF'
+legospec - mirror and search LEGO AMMA API specs
+
+  legospec env [production|integration]   show / switch the default environment
+  legospec list [pattern]                 list API names in the current environment
+  legospec sync [--all] [--force]         mirror specs to disk (--all = both envs)
+  legospec get <api>                      download one spec, print its path
+  legospec show <api>                     endpoints, schemas and metadata for an API
+  legospec path <api>                     print where the spec lives on disk
+  legospec search <term> [--all]          which APIs expose <term>
+  legospec doctor                         check config and prerequisites
+
+Search flags: --all (both envs)  --limit N  --hits N  --regex  --json
+Env vars: LEGO_BIN LEGO_SPECS_DIR LEGO_SYNC_JOBS LEGO_INDEX_SERVER LEGO_PYTHON
+EOF
+}
+
+# --- dispatch --------------------------------------------------------------
+
+ENV_OVERRIDE=""
+args=()
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -e|--env) ENV_OVERRIDE="$2"; shift 2 ;;
+    --prod|--production) ENV_OVERRIDE="production"; shift ;;
+    --dev|--integration) ENV_OVERRIDE="integration"; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) args+=("$1"); shift ;;
+  esac
+done
+set -- ${args[@]+"${args[@]}"}
+[[ $# -ge 1 ]] || { usage; exit 1; }
+
+cmd="$1"; shift
+case "$cmd" in
+  __fetch1) __fetch1 "$@" ;;
+  env)     cmd_env "$@" ;;
+  list)    cmd_list "$@" ;;
+  sync)    cmd_sync "$@" ;;
+  get)     cmd_get "$@" ;;
+  show)    cmd_show "$@" ;;
+  path)    cmd_path "$@" ;;
+  search)  cmd_search "$@" ;;
+  doctor)  cmd_doctor "$@" ;;
+  *)       die "unknown command '$cmd' (try: legospec --help)" ;;
+esac

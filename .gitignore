@@ -1,1 +1,52 @@
+# --------------------------------------------------------------- Secrets ----
+# Never commit credentials. This repo is public.
+.zsh_secrets
+home/.zsh_secrets
+
+# Agent and CLI credential stores
+**/auth.json
+**/oauth_creds.json
+**/google_accounts.json
+**/.credentials.json
+home/.config/gh/hosts.yml
+
+# ~/.claude.json is deliberately NOT tracked: 115K of project history, and the
+# context7 MCP entry carries an inline token. Re-add MCP servers by hand.
+home/.claude.json
+
+# Keys and certificates
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# ------------------------------------------------------------------ Noise ----
+.DS_Store
 .idea/
+*.bak
+*.bak_*
+*.bak.*
+*.backup
+*.backup.*
+*.orig
+*~
+
+# Generated or machine-local agent state
+**/node_modules/
+**/cache/
+**/projects/
+**/history/
+**/shell-snapshots/
+**/todos/
+**/statsig/
+**/tmp/
+**/logs/
+*.lock
+bun.lock
+package-lock.json
+.session-stats.json
+installation_id
+state.json
+trustedFolders.json

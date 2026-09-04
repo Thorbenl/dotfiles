@@ -1,0 +1,218 @@
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "ENABLE_LSP_TOOL": "1",
+    "ENABLE_TOOL_SEARCH": "true"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npx gsd-core *)",
+      "Read(.planning/*)",
+      "Write(.planning/*)",
+      "Read(STATE.md)",
+      "Write(STATE.md)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.local)",
+      "Read(.env.production)",
+      "Read(secrets.json)",
+      "Read(id_rsa)",
+      "Read(credentials.json)",
+      "Read(.env.*)",
+      "Read(.secrets)"
+    ],
+    "defaultMode": "auto"
+  },
+  "model": "opus[1m]",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Read|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/block-secrets.py"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/check-gh-auth.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__atlassian",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ~/.claude/hooks/check-atlassian-auth.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/Users/dkThoLue/.local/share/mise/installs/node/24.12.0/bin/node\" \"/Users/dkThoLue/.claude/hooks/gsd-worktree-path-guard.js\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"/Users/dkThoLue/.claude/hooks/gsd-graphify-update.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /Users/dkThoLue/.claude/hooks/vault-system-reminder.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "oh-my-claudecode@omc": false,
+    "context7@claude-plugins-official": true,
+    "code-review@claude-plugins-official": true,
+    "ralph-loop@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "commit-commands@claude-plugins-official": true,
+    "figma@claude-plugins-official": false,
+    "frontend-design@claude-plugins-official": true,
+    "github@claude-plugins-official": false,
+    "pr-review-toolkit@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": false,
+    "csharp-lsp@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": false,
+    "playwright@claude-plugins-official": true,
+    "xclaude-plugin@xclaude-plugin-marketplace": false,
+    "claude-md-management@claude-plugins-official": true,
+    "obsidian@obsidian-skills": true,
+    "codex@openai-codex": true,
+    "claude-mem@thedotmack": true,
+    "user-story@pm-skills": false,
+    "watch@claude-video": true,
+    "simple-english@simple-english": true,
+    "assessments@CMT-lumen-assessments": true
+  },
+  "extraKnownMarketplaces": {
+    "xclaude-plugin-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "conorluddy/xclaude-plugin"
+      }
+    },
+    "omc": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Yeachan-Heo/oh-my-claudecode.git"
+      }
+    },
+    "ai-pm-copilot": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/slgoodrich/agents.git"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "obsidian-skills": {
+      "source": {
+        "source": "github",
+        "repo": "kepano/obsidian-skills"
+      }
+    },
+    "thedotmack": {
+      "source": {
+        "source": "github",
+        "repo": "thedotmack/claude-mem"
+      }
+    },
+    "vcp": {
+      "source": {
+        "source": "github",
+        "repo": "Z-M-Huang/vcp"
+      }
+    },
+    "pm-skills": {
+      "source": {
+        "source": "github",
+        "repo": "deanpeters/Product-Manager-Skills"
+      }
+    },
+    "claude-video": {
+      "source": {
+        "source": "github",
+        "repo": "bradautomates/claude-video"
+      }
+    },
+    "simple-english": {
+      "source": {
+        "source": "github",
+        "repo": "AminBlg/SimpleEnglish"
+      }
+    },
+    "CMT-lumen-assessments": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/dkThoLue/work/CMT-lumen-assessments"
+      }
+    }
+  },
+  "alwaysThinkingEnabled": true,
+  "effortLevel": "high",
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "mcpServers": {
+    "adt": {
+      "command": "node",
+      "args": [
+        "/Users/dkThoLue/work/adt-mcp/dist/index.js"
+      ],
+      "env": {
+        "ADT_HOST": "https://vd46app01.sap.internal.lego:22000",
+        "ADT_CLIENT": "080"
+      }
+    },
+    "discord": {
+      "command": "node",
+      "args": [
+        "/Users/dkThoLue/personalProjects/discordmcp/build/index.js"
+      ],
+      "env": {
+        "DISCORD_TOKEN": "MTMwNzgzNjIzNDk0NDQ4MzQ2MQ.GYcVOG.8BkloaJzwRT9xzpohOyUnF9RixpNwYrIzSPVoo"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    }
+  }
+}

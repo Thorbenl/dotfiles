@@ -1,0 +1,206 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "enabled_providers": [
+    "lego-anthropic",
+    "lego-openai",
+    "lego-anthropic-v2",
+    "lego-openai-v2"
+  ],
+  "model": "lego-anthropic/claude-opus-4-8",
+  "agent": {
+    "build": {
+      "model": "lego-openai/gpt-5.5-2026-04-24"
+    },
+    "plan": {
+      "model": "lego-anthropic/claude-opus-4-8"
+    },
+    "general": {
+      "model": "lego-anthropic/claude-sonnet-4-6"
+    },
+    "explore": {
+      "model": "lego-anthropic/claude-haiku-4-5"
+    },
+    "scout": {
+      "model": "lego-anthropic/claude-haiku-4-5"
+    }
+  },
+  "lsp": {},
+  "mcp": {
+    "atlassian": {
+      "type": "remote",
+      "url": "https://mcp.atlassian.com/v1/mcp",
+      "enabled": true
+    },
+    "sap": {
+      "type": "local",
+      "command": [
+        "/Users/dkThoLue/work/sap-mcp-server/run.sh"
+      ],
+      "enabled": true
+    }
+  },
+  "provider": {
+    "lego-openai": {
+      "npm": "@ai-sdk/azure",
+      "name": "LEGO OpenAI",
+      "options": {
+        "baseURL": "https://models.assistant.legogroup.io/openai",
+        "apiVersion": "2024-10-21",
+        "apiKey": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg",
+        "headers": {
+          "api-key": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg"
+        }
+      },
+      "models": {
+        "gpt-5.5-2026-04-24": {
+          "id": "gpt-5.5-2026-04-24",
+          "name": "LEGO GPT-5.5"
+        }
+      }
+    },
+    "lego-anthropic": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "LEGO Anthropic",
+      "options": {
+        "baseURL": "https://models.assistant.legogroup.io/anthropic/v1",
+        "apiKey": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg",
+        "headers": {
+          "api-key": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg"
+        }
+      },
+      "models": {
+        "claude-opus-4-8": {
+          "id": "anthropic.claude-opus-4-8",
+          "name": "LEGO Opus 4.8"
+        },
+        "claude-sonnet-4-6": {
+          "id": "anthropic.claude-sonnet-4-6",
+          "name": "LEGO Opus 4.6"
+        },
+        "claude-haiku-4-5": {
+          "id": "anthropic.claude-haiku-4-5-20251001-v1:0",
+          "name": "LEGO Haiku 4.5"
+        }
+      }
+    },
+    "lego-anthropic-v2": {
+      "npm": "@ai-sdk/anthropic",
+      "name": "LEGO Anthropic (genai gateway)",
+      "options": {
+        "baseURL": "https://api.genai.thelegogroup.com/anthropic/v1",
+        "authToken": "{env:LEGO_GENAI_TOKEN}"
+      },
+      "models": {
+        "claude-opus-5": {
+          "id": "eu.anthropic.claude-opus-5",
+          "name": "LEGO Opus 5"
+        },
+        "claude-sonnet-5": {
+          "id": "eu.anthropic.claude-sonnet-5",
+          "name": "LEGO Sonnet 5"
+        },
+        "claude-opus-4-8": {
+          "id": "eu.anthropic.claude-opus-4-8",
+          "name": "LEGO Opus 4.8"
+        },
+        "claude-opus-4-7": {
+          "id": "eu.anthropic.claude-opus-4-7",
+          "name": "LEGO Opus 4.7"
+        },
+        "claude-opus-4-6": {
+          "id": "eu.anthropic.claude-opus-4-6-v1",
+          "name": "LEGO Opus 4.6"
+        },
+        "claude-opus-4-5": {
+          "id": "eu.anthropic.claude-opus-4-5-20251101-v1:0",
+          "name": "LEGO Opus 4.5"
+        },
+        "claude-sonnet-4-6": {
+          "id": "eu.anthropic.claude-sonnet-4-6",
+          "name": "LEGO Sonnet 4.6"
+        },
+        "claude-sonnet-4-5": {
+          "id": "eu.anthropic.claude-sonnet-4-5-20250929-v1:0",
+          "name": "LEGO Sonnet 4.5"
+        },
+        "claude-haiku-4-5": {
+          "id": "eu.anthropic.claude-haiku-4-5-20251001-v1:0",
+          "name": "LEGO Haiku 4.5",
+          "options": {
+            "toolStreaming": false
+          }
+        }
+      }
+    },
+    "lego-openai-v2": {
+      "npm": "@ai-sdk/openai",
+      "name": "LEGO OpenAI (genai gateway)",
+      "options": {
+        "baseURL": "https://api.genai.thelegogroup.com/openai/v1",
+        "apiKey": "{env:LEGO_GENAI_TOKEN}"
+      },
+      "models": {
+        "gpt-5-6-sol": {
+          "id": "gpt-5.6-sol-2026-07-09",
+          "name": "GPT 5.6 Sol"
+        },
+        "gpt-5-6-terra": {
+          "id": "gpt-5.6-terra-2026-07-09",
+          "name": "GPT 5.6 Terra"
+        },
+        "gpt-5-6-luna": {
+          "id": "gpt-5.6-luna-2026-07-09",
+          "name": "GPT 5.6 Luna"
+        },
+        "gpt-5-5": {
+          "id": "gpt-5.5-2026-04-24",
+          "name": "GPT 5.5"
+        },
+        "gpt-5-4": {
+          "id": "gpt-5.4-2026-03-05",
+          "name": "GPT 5.4"
+        },
+        "gpt-5-1": {
+          "id": "gpt-5.1-2025-11-13",
+          "name": "GPT 5.1"
+        },
+        "gpt-5": {
+          "id": "gpt-5-2025-08-07",
+          "name": "GPT 5"
+        },
+        "gpt-5-mini": {
+          "id": "gpt-5-mini-2025-08-07",
+          "name": "GPT 5 mini"
+        },
+        "gpt-5-nano": {
+          "id": "gpt-5-nano-2025-08-07",
+          "name": "GPT 5 nano"
+        },
+        "gpt-4-1": {
+          "id": "gpt-4.1-2025-04-14",
+          "name": "GPT 4.1"
+        },
+        "gpt-4-1-mini": {
+          "id": "gpt-4.1-mini-2025-04-14",
+          "name": "GPT 4.1 mini"
+        },
+        "gpt-4-1-nano": {
+          "id": "gpt-4.1-nano-2025-04-14",
+          "name": "GPT 4.1 nano"
+        },
+        "gpt-4o-mini": {
+          "id": "gpt-4o-mini-2024-07-18",
+          "name": "GPT 4o mini"
+        },
+        "o4-mini": {
+          "id": "o4-mini-2025-04-16",
+          "name": "o4-mini"
+        },
+        "o1": {
+          "id": "o1-2024-12-17",
+          "name": "o1"
+        }
+      }
+    }
+  }
+}
