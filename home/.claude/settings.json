@@ -178,8 +178,26 @@
     },
     "CMT-lumen-assessments": {
       "source": {
-        "source": "directory",
-        "path": "/Users/dkThoLue/work/CMT-lumen-assessments"
+        "source": "github",
+        "repo": "LEGO/CMT-lumen-assessments"
+      }
+    },
+    "foundation-plugin-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "LEGO/foundation-plugin-marketplace"
+      }
+    },
+    "cat-plugin-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "LEGO/cat-plugin-marketplace"
+      }
+    },
+    "07.03.03-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "LEGO/07.03.03-marketplace"
       }
     }
   },
