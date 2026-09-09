@@ -222,7 +222,7 @@
         "/Users/dkThoLue/personalProjects/discordmcp/build/index.js"
       ],
       "env": {
-        "DISCORD_TOKEN": "MTMwNzgzNjIzNDk0NDQ4MzQ2MQ.GYcVOG.8BkloaJzwRT9xzpohOyUnF9RixpNwYrIzSPVoo"
+        "DISCORD_TOKEN": "{env:DISCORD_TOKEN}"
       }
     },
     "context7": {

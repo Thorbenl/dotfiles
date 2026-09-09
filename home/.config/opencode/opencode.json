@@ -46,9 +46,9 @@
       "options": {
         "baseURL": "https://models.assistant.legogroup.io/openai",
         "apiVersion": "2024-10-21",
-        "apiKey": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg",
+        "apiKey": "{env:LEGO_GENAI_TOKEN_V1}",
         "headers": {
-          "api-key": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg"
+          "api-key": "{env:LEGO_GENAI_TOKEN_V1}"
         }
       },
       "models": {
@@ -63,9 +63,9 @@
       "name": "LEGO Anthropic",
       "options": {
         "baseURL": "https://models.assistant.legogroup.io/anthropic/v1",
-        "apiKey": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg",
+        "apiKey": "{env:LEGO_GENAI_TOKEN_V1}",
         "headers": {
-          "api-key": "a5c3eeae13ed4c07bc59fe34ca806f14:XjwDULWe7_fqtvVhjmabGGk6tT-oIY_ZD7bEMbvPdJvXYQItsUZU5Ldtqv3U7_GcGL36DyTWMCXbewQ17CTDlO4mRkfyraMUquLV2Q21zK-rkvnNG0lY4N5Y_O7yI0pAoHAWnhT45tGWn8V3wVIXL65pUlJFUhawcX0kdiYl4AwMKIjGO4FKf4GqvwsuSRuahh6-lSaMXB_Oca8RfK0oKsx90IxiMfntUy0scrXPRyOyGQ3YDhCphhQvv_eYZMC9STENGpDVo7TUJkECR6uDmgmfp5vXNeZBgIzuYGGZ2tkgLvKx9vBaITLiJF-6424cy9Nn8RRfeauH9aGbthaPlg"
+          "api-key": "{env:LEGO_GENAI_TOKEN_V1}"
         }
       },
       "models": {
@@ -202,5 +202,8 @@
         }
       }
     }
-  }
+  },
+  "instructions": [
+    "~/.config/coding-agents/engineering.md"
+  ]
 }

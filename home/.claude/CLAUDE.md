@@ -87,6 +87,7 @@ Say "setup omc" or run `/oh-my-claudecode:omc-setup`.
 <!-- User customizations -->
 
 @/Users/dkThoLue/.config/coding-agents/personal.md
+@/Users/dkThoLue/.config/coding-agents/engineering.md
 # graphify
 - **graphify** (`~/.claude/skills/graphify/SKILL.md`) - any input to knowledge graph. Trigger: `/graphify`
 When the user types `/graphify`, invoke the Skill tool with `skill: "graphify"` before doing anything else.

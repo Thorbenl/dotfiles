@@ -55,3 +55,6 @@ trustedFolders.json
 # either stow aborts on the conflict or `mise use -g` writes through the
 # symlink and dirties this repo on every run.
 home/.config/mise/config.toml
+
+# Personal preferences and engineering standards are tracked; secrets are not.
+.zsh_secrets
