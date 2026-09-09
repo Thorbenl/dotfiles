@@ -281,10 +281,12 @@ setup_mise() {
 		return 0
 	fi
 
-	# Language versions come from ~/.config/mise/config.toml, which your
-	# dotfiles should provide. Without it, install a current node.
-	# Baseline runtimes, set explicitly. ~/.config/mise/config.toml is not in
-	# the dotfiles repo, so this script has to be the source of truth for it.
+	# Baseline runtimes, set explicitly. This script is the ONE owner of
+	# ~/.config/mise/config.toml, and the file is deliberately NOT in the stow
+	# package. Two owners is a contradiction: `mise use -g` writes that file, so
+	# if stow had linked it into the repo every run here would write through the
+	# symlink and dirty git — and if mise wrote it first, stow aborted the whole
+	# run on the conflict, which is what silently left a machine unconfigured.
 	# Writing them here means a fresh machine works before dotfiles are cloned.
 	info "Setting global runtimes"
 	"$mise" use -g node@lts
@@ -457,36 +459,48 @@ clone_repos() {
 stow_dotfiles() {
 	local repo="$HOME/dotfiles" pkg="home"
 
+	# Every failure below returns 1. This step used to return 0 whether it
+	# linked anything or not, so run_step wrote its completion marker even when
+	# stow was absent or aborted — a machine with no dotfiles at all reported
+	# fourteen green "already done" lines and no way to notice.
 	if [ ! -d "$repo/$pkg" ]; then
-		info "No $repo/$pkg package, skipping stow"
-		info "Flat repo layouts are not stowable: stow would link README.md"
-		info "and the shell scripts into your home directory too."
-		return 0
+		err "No $repo/$pkg package. Clone the dotfiles repo before this step:"
+		err "  git clone git@github.com:Thorbenl/dotfiles.git $repo"
+		return 1
 	fi
 	if ! command -v stow >/dev/null 2>&1; then
-		warn "stow not installed, skipping"
-		return 0
+		err "stow is not installed, so nothing can be linked."
+		err "It comes from the Brewfile, so the brewfile step did not finish."
+		err "Fix that first:  rm $STATE_DIR/brewfile.done && $0"
+		return 1
 	fi
 	if $CHECK_ONLY; then
 		info "Would stow $repo/$pkg into $HOME"
 		return 0
 	fi
 
-	# stow refuses to link over a real file. This script writes a bootstrap
-	# .zprofile, so move any conflicting real file aside rather than deleting.
-	local f
-	for f in .zshrc .zprofile .zshenv; do
-		if [ -e "$HOME/$f" ] && [ ! -L "$HOME/$f" ]; then
-			mv "$HOME/$f" "$HOME/$f.pre-stow"
-			warn "Moved existing $f to $f.pre-stow so stow can link it"
+	# stow refuses to link over a real file and aborts the WHOLE run on the
+	# first conflict, so every conflicting path has to be moved aside first.
+	# Derived from the package, not hardcoded: the list was once .zshrc,
+	# .zprofile and .zshenv while the package held fifteen files, so a real
+	# ~/.config/mise/config.toml written by an earlier step killed the run.
+	local rel target moved=0
+	while IFS= read -r rel; do
+		target="$HOME/$rel"
+		if [ -e "$target" ] && [ ! -L "$target" ]; then
+			mv "$target" "$target.pre-stow"
+			warn "Moved existing $rel to $rel.pre-stow so stow can link it"
+			moved=$((moved + 1))
 		fi
-	done
+	done < <(cd "$repo/$pkg" && find . -type f | sed 's|^\./||')
+	[ "$moved" -gt 0 ] && info "Moved $moved conflicting file(s) aside"
 
 	info "Stowing $pkg into $HOME"
 	if stow --dir="$repo" --target="$HOME" "$pkg"; then
 		success "Dotfiles linked"
 	else
-		warn "stow failed. Resolve the conflicts it listed, then re-run."
+		err "stow failed. Resolve the conflicts it listed, then re-run."
+		return 1
 	fi
 }
 

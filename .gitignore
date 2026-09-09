@@ -50,3 +50,8 @@ package-lock.json
 installation_id
 state.json
 trustedFolders.json
+
+# Owned by setup-new-mac.sh, never stowed. Two owners of one file means
+# either stow aborts on the conflict or `mise use -g` writes through the
+# symlink and dirties this repo on every run.
+home/.config/mise/config.toml
